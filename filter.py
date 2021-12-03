@@ -3,22 +3,14 @@ import numpy as np
 
 
 def get_average_brightness(arr_of_pixels, mosaic_size, i, j):
-    total_brightness = 0
-    for row in range(i, i + mosaic_size):
-        for column in range(j, j + mosaic_size):
-            r = arr_of_pixels[row][column][0]
-            g = arr_of_pixels[row][column][1]
-            b = arr_of_pixels[row][column][2]
-            brightness = r // 3 + g // 3 + b // 3
-            total_brightness += brightness
-    return int(total_brightness // mosaic_size ** 2)
+    area = arr_of_pixels[i:i + mosaic_size, j:j + mosaic_size]
+    total_brightness = np.sum(area)
+    return int(total_brightness // 3 // mosaic_size ** 2)
 
 
 def change_pixels_color(arr_of_pixels, mosaic_size, grayscale, average_brightness, i, j):
     pixel_value = int(average_brightness // grayscale) * grayscale
-    for row in range(i, i + mosaic_size):
-        for column in range(j, j + mosaic_size):
-            arr_of_pixels[row][column] = [pixel_value] * 3
+    arr_of_pixels[i:i + mosaic_size, j:j + mosaic_size] = pixel_value
     return arr_of_pixels
 
 
