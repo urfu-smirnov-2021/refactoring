@@ -1,28 +1,32 @@
 from PIL import Image
 import numpy as np
-img = Image.open("img2.jpg")
-arr = np.array(img)
-a = len(arr)
-a1 = len(arr[1])
-i = 0
-while i < a - 11:
-    j = 0
-    while j < a1 - 11:
-        s = 0
-        for n in range(i, i + 10):
-            for n1 in range(j, j + 10):
-                n1 = arr[n][n1][0]
-                n2 = arr[n][n1][1]
-                n3 = arr[n][n1][2]
-                M = n1 + n2 + n3
-                s += M
-        s = int(s // 100)
-        for n in range(i, i + 10):
-            for n1 in range(j, j + 10):
-                arr[n][n1][0] = int(s // 50) * 50
-                arr[n][n1][1] = int(s // 50) * 50
-                arr[n][n1][2] = int(s // 50) * 50
-        j = j + 10
-    i = i + 10
-res = Image.fromarray(arr)
-res.save('res.jpg')
+
+def transform_image_to_mosaic(input_image, mosaic_width, mosaic_height, scale, mosaic_name, format_name):
+    image_array = np.array(input_image)
+    mosaic_array = get_gray_mosaic_array(image_array, mosaic_width, mosaic_height, scale)
+    mosaic_image = Image.fromarray(mosaic_array)
+    mosaic_image.save(mosaic_name + format_name)
+    
+def get_gray_mosaic_array(image_array, mosaic_width, mosaic_height, scale):
+    width = len(image_array)
+    height = len(image_array[1])
+    for current_width in range(0, width , mosaic_width):
+        for current_height in range(0, height , mosaic_height):
+            average_color = get_average_color(image_array, current_width, mosaic_width , current_height, mosaic_height)
+            gray_color = average_color - average_color % scale
+            image_array[current_width: current_width + mosaic_width, current_height: current_height + mosaic_height] = np.full(3, gray_color)
+    return image_array
+
+def get_average_color(image_array, width, mosaic_width, height, mosaic_height):
+    mosaic_resolution = mosaic_height * mosaic_width
+    average_color_on_screen = np.sum(image_array[width: width + mosaic_width, height: height + mosaic_height]) //  3
+    average_color = average_color_on_screen // mosaic_resolution
+    return average_color
+
+input_image = Image.open(input("Путь до изображения -  "))
+mosaic_width = int(input("Целое положительное число для ширины мозайки - "))
+mosaic_height = int(input("Целое положительное число для высоты мозайки - "))
+scale = int(input("Целое положительное число для масштаба изменения серых цветов в мозайке - "))
+mosaic_name = input("Введите название для готовой мозайки: ")
+format_name = input("Введите формат для готовой мозайки: ")
+transform_image_to_mosaic(input_image, mosaic_width, mosaic_height, scale, mosaic_name, format_name)
