@@ -1,28 +1,29 @@
 from PIL import Image
 import numpy as np
-img = Image.open("img2.jpg")
-arr = np.array(img)
-a = len(arr)
-a1 = len(arr[1])
-i = 0
-while i < a - 11:
-    j = 0
-    while j < a1 - 11:
-        s = 0
-        for n in range(i, i + 10):
-            for n1 in range(j, j + 10):
-                n1 = arr[n][n1][0]
-                n2 = arr[n][n1][1]
-                n3 = arr[n][n1][2]
-                M = n1 + n2 + n3
-                s += M
-        s = int(s // 100)
-        for n in range(i, i + 10):
-            for n1 in range(j, j + 10):
-                arr[n][n1][0] = int(s // 50) * 50
-                arr[n][n1][1] = int(s // 50) * 50
-                arr[n][n1][2] = int(s // 50) * 50
-        j = j + 10
-    i = i + 10
-res = Image.fromarray(arr)
-res.save('res.jpg')
+
+def get_current_color(picture_array, width, picture_width, height, picture_height):
+    mosaic_resolution = picture_height * picture_width
+    current_color_on_screen = np.sum(picture_array[width: width + picture_width, height: height + picture_height]) //  3
+    return current_color_on_screen // mosaic_resolution
+
+def get_picture_array(picture_array, picture_width, picture_height, scale):
+    for i in range(0, len(picture_array) , picture_width):
+        for j in range(0, len(picture_array[1]) , picture_height):
+            current_color = get_current_color(picture_array, i, picture_width , j, picture_height)
+            picture_array[i: i + picture_width, j: j + picture_height] = np.full(3, current_color - current_color % scale)
+    return picture_array
+
+def transform_picture(in_picture, picture_width, picture_height, scale, picture_name, format):
+    picture_array = np.array(in_picture)
+    mosaic_array = get_picture_array(picture_array, picture_width, picture_height, scale)
+    mosaic_image = Image.fromarray(mosaic_array)
+    mosaic_image.save(picture_name + format)
+
+in_picture = Image.open(input("Введите путь до изображения:  "))
+picture_width = int(input("Введите ширину мозайки: "))
+picture_height = int(input("Введите высоту мозайки: "))
+scale = int(input("Введите масштаб изменения серого цвета в мозайке: "))
+picture_name = input("Введите название готовой мозайки:  ")
+format = input("Введите формат изображения готовой мозайки: ")
+transform_picture(in_picture, picture_width, picture_height, scale, picture_name, format)
+
