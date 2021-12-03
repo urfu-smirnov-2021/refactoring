@@ -15,13 +15,13 @@ def get_gray_mosaic_array(image_array, mosaic_width, mosaic_height, scale):
     for current_width in range(0, width , mosaic_width):
         for current_height in range(0, height , mosaic_height):
             average_color = get_average_color(image_array, current_width, mosaic_width , current_height, mosaic_height)
-            gray_color = int(average_color // scale) * scale
+            gray_color = average_color - average_color % scale
             image_array[current_width: current_width + mosaic_width, current_height: current_height + mosaic_height] = np.full(3, gray_color)
     return image_array
 
-mosaic_width = 10
-mosaic_height = 10
-scale = 50
+mosaic_width = int(input("Целое положительное число для ширины мозайки - "))
+mosaic_height = int(input("Целое положительное число для высоты мозайки - "))
+scale = int(input("Целое положительное число для масштаба изменения серых цветов в мозайке - "))
 mosaic_array = get_gray_mosaic_array(image_array, mosaic_width, mosaic_height, scale)
 mosaic_image = Image.fromarray(mosaic_array)
 mosaic_image.save('res.jpg')
