@@ -1,28 +1,32 @@
 from PIL import Image
 import numpy as np
-input_image = Image.open("img2.jpg")
-image_array = np.array(input_image)
-width = len(image_array)
-height = len(image_array[1])
-current_width = 0
-while current_width < width - 9:
-    current_height = 0
-    while current_height < height - 9:
-        total_brightness = 0
-        for n in range(current_width, current_width + 10):
-            for k in range(current_height, current_height + 10):
-                first_component = image_array[n][k][0]
-                second_component = image_array[n][k][1]
-                third_component = image_array[n][k][2]
-                local_brightness = int(first_component) + int(second_component) + int(third_component)
-                total_brightness += local_brightness
-        total_brightness = int(total_brightness / 3 // 100)
-        for n in range(current_width, current_width + 10):
-            for comp in range(current_height, current_height + 10):
-                image_array[n][comp][0] = int(total_brightness // 50) * 50
-                image_array[n][comp][1] = int(total_brightness // 50) * 50
-                image_array[n][comp][2] = int(total_brightness // 50) * 50
-        current_height = current_height + 10
-    current_width = current_width + 10
-mosaic_image = Image.fromarray(image_array)
-mosaic_image.save('res.jpg')
+
+def transform_image_to_mosaic(input_image, mosaic_width, mosaic_height, scale, mosaic_name, format_name):
+    image_array = np.array(input_image)
+    mosaic_array = get_gray_mosaic_array(image_array, mosaic_width, mosaic_height, scale)
+    mosaic_image = Image.fromarray(mosaic_array)
+    mosaic_image.save(mosaic_name + format_name)
+    
+def get_gray_mosaic_array(image_array, mosaic_width, mosaic_height, scale):
+    width = len(image_array)
+    height = len(image_array[1])
+    for current_width in range(0, width , mosaic_width):
+        for current_height in range(0, height , mosaic_height):
+            average_color = get_average_color(image_array, current_width, mosaic_width , current_height, mosaic_height)
+            gray_color = average_color - average_color % scale
+            image_array[current_width: current_width + mosaic_width, current_height: current_height + mosaic_height] = np.full(3, gray_color)
+    return image_array
+    
+def get_average_color(image_array, width, mosaic_width, height, mosaic_height):
+    mosaic_resolution = mosaic_height * mosaic_width
+    average_color_on_screen = np.sum(image_array[width: width + mosaic_width, height: height + mosaic_height]) //  3
+    average_color = average_color_on_screen // mosaic_resolution
+    return average_color
+
+input_image = Image.open(input("Путь до изображения -  "))
+mosaic_width = int(input("Целое положительное число для ширины мозайки -  "))
+mosaic_height = int(input("Целое положительное число для высоты мозайки - "))
+scale = int(input("Целое положительное число для масштаба градации серых цветов в мозайке - "))
+mosaic_name = input("Название для готовой мозайки - ")
+format_name = input("Формат для готовой мозайки - ")
+transform_image_to_mosaic(input_image, mosaic_width, mosaic_height, scale, mosaic_name, format_name)
